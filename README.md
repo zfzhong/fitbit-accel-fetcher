@@ -31,7 +31,7 @@ However, in practice we found timestamp gaps from the batch reading data. The da
 | 930709 | 0.026 | -0.132 | 9.728 |
 | 930739 | 0.014 | -0.118 | 9.67 |
 
-The above example is from one of the files we got by running the code of this repository (slightly modified from [fitbit-accel-fetcher](https://github.com/gondwanasoft/fitbit-accel-fetcher) on Fitbit Sense to check timestamp gaps and duplicates). 
+The above example is from one of the files we got by running the code of this repository (slightly modified from [fitbit-accel-fetcher](https://github.com/gondwanasoft/fitbit-accel-fetcher)) on Fitbit Sense to check timestamp gaps and duplicates. 
 
 The above example is from file "[17.csv](/17.csv)", row 391 - 400. 
 
