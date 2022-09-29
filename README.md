@@ -47,7 +47,7 @@ The above example is from file "[17.csv](/17.csv)", row 391 - 400.
 
   We actually expect the timestamps increases. We are just confused by the timestamp decreasing or duplicating issues.
 
-I will appreciate it very much if anyone has such experience and can share the fixes to these issues.
+I will appreciate it very much if anyone has such experience shares the fixes to these issues.
 
 # fitbit-accel-fetcher
 This is a Fitbit OS demo for transferring watch accelerometer data via companion to an external web server.
