@@ -9,6 +9,7 @@ import { ACCEL_SCALAR, valuesPerRecord, statusMsg } from '../common/common.js'
 
 const frequency = 30                                    // Hz (records per second): watch may go faster as it rounds intervals down to a multiple of 10ms
 const batchPeriod = 1                                   // elapsed time between batches (seconds)
+const interval = parseInt(1000 / frequency)
 const recordsPerBatch = frequency * batchPeriod
 const bytesPerRecord = valuesPerRecord * 2              // 2 because values are Int16 (2 bytes) each
 const recDurationPerFile = 60                           // seconds of data that will be stored in each file (assuming frequency is accurate)
@@ -24,6 +25,11 @@ const errorEl = document.getElementById('error')
 const recBtnEl = document.getElementById('recBtn')
 const xferBtnEl = document.getElementById('xferBtn')
 const isSim = goals.calories === 360  // !!
+
+// to check batch reading timestamp problem
+let prevTimestamp = 0
+let errLogCount = 0
+const errLogPrefix = 'error'
 
 let fileDescriptor
 let simAccelTimer
@@ -97,22 +103,49 @@ function simAccelTick() {  // fake data
   recTimeEl.text = Math.round((Date.now()-startTime)/1000)
 }
 
+function write2ErrorLog(msg) {
+  console.log(msg);
+  let message = { type: 'error', message: msg };
+
+  errLogCount += 1;
+  
+  //let errLogFileName = `${errLogPrefix}.${errLogCount}.log`;
+  //fs.writeFileSync(errLogFileName, message, 'cbor');
+}
+
 function onAccelReading() {
+  let ts = 0
   const dateNow = Date.now()
   if (dateLastBatch) {
-    console.log(`t since last batch: ${dateNow-dateLastBatch} ms`)
+    //console.log(`t since last batch: ${dateNow - dateLastBatch} ms`)
   }
   dateLastBatch = dateNow
 
   const batchSize = accel.readings.timestamp.length
   let bufferIndex = 0
-  console.log(`batchSize=${batchSize} timestamp[]=${accel.readings.timestamp}`)
+  //console.log(`batchSize=${batchSize} timestamp[]=${accel.readings.timestamp}`)
   for (let index = 0; index<batchSize; index++) {
     //console.log(`${accel.readings.timestamp[index]} ${accel.readings.x[index]}}`)
-    dataBufferView[bufferIndex++] = accel.readings.timestamp[index] & 0x7FFF
+    ts = accel.readings.timestamp[index]
+    //dataBufferView[bufferIndex++] = accel.readings.timestamp[index] & 0x7FFF
+    dataBufferView[bufferIndex++] = ts & 0x7FFF
     dataBufferView[bufferIndex++] = accel.readings.x[index] * ACCEL_SCALAR
     dataBufferView[bufferIndex++] = accel.readings.y[index] * ACCEL_SCALAR
     dataBufferView[bufferIndex++] = accel.readings.z[index] * ACCEL_SCALAR
+
+    if (prevTimestamp > 0) {
+      if (ts <= prevTimestamp) {
+        let msg = `duplicates error, prev:${prevTimestamp}, ts:${ts}, row:${recordsInFile}, fileNumber:${state.fileNumberRecording}`
+        write2ErrorLog(msg)
+      }
+
+      if (ts >= prevTimestamp + interval * 2) {
+        let msg = `gap error, prev:${prevTimestamp}, ts:${ts}, row:${recordsInFile}, fileNumber:${state.fileNumberRecording}`
+        write2ErrorLog(msg)
+      }
+    }
+
+    prevTimestamp = ts
   }
   if (isRecording)
     try {
@@ -125,7 +158,7 @@ function onAccelReading() {
     fs.closeSync(fileDescriptor)
     fileDescriptor = fs.openSync(++state.fileNumberRecording, 'a')
     recordsInFile = 0
-    statusEl.text = 'Recording file ' + state.fileNumberRecording
+    statusEl.text = 'Recording file ' + state.fileNumberRecording + ', Err ' + errLogCount
     //console.log('Started new file')
   }
   recTimeEl.text = Math.round((Date.now()-startTime)/1000)
