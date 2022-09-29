@@ -33,7 +33,7 @@ However, in practice we found timestamp gaps from the batch reading data. The da
 
 The above example is from one of the files we got using the code of this repository (slightly modified from [fitbit-accel-fetcher](https://github.com/gondwanasoft/fitbit-accel-fetcher) to check timestamp gaps and duplicates). 
 
-The above example is from file "17.csv", row 391 - 400. 
+The above example is from file "[17.csv](/blob/main/17.csv)", row 391 - 400. 
 
 - Timestamp Gap
   
