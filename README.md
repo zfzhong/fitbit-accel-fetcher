@@ -47,54 +47,12 @@ The above example is from file "[17.csv](/17.csv)", row 391 - 400.
 
   We actually expect the timestamps increases. We are just confused by the timestamp decreasing or duplicating issues.
 
-I will appreciate it very much if anyone has such experience shares the fixes to these issues.
+  I have many other files which have gaps and duplicates, I am willing to provide them if anyone is interested. If you run the code from this repository with your Fitbit device, you will get data with gaps and duplicates as well.
 
-# fitbit-accel-fetcher
-This is a Fitbit OS demo for transferring watch accelerometer data via companion to an external web server.
+# How Did I Discover the Problem
+I actually built my stand-alone Fitbit App to record the accelerometer data with frequency 50 and batch 50. I found the gaps and duplicates in my App. I am not quite confident in my code because I am quite new to Fitbit App developement.
 
-Features
--
-Data is stored on the watch and transmitted to the companion in binary. This improves storage capacity and data transfer rate by about a factor of four.
+I found [fitbit-accel-fetcher](https://github.com/gondwanasoft/fitbit-accel-fetcher) from the [Fitbit github site: github.com/Fitbit/ossapps](https://github.com/Fitbit/ossapps). Unfortunately, after a bit checking, it seems [fitbit-accel-fetcher](https://github.com/gondwanasoft/fitbit-accel-fetcher) has the timestamp issues as well.
 
-Data is saved and transferred using multiple small files, to provide greater feedback during transfers and to allow faster error recovery.
-
-Failed transfers are automatically retried.
-
-The companion converts the binary data into plain text in CSV format, so it can be read in a text editor or imported into a spreadsheet.
-
-The settings screen displays the companion's status.
-
-By default, this app uses [android-fitbit-fetcher](https://github.com/gondwanasoft/android-fitbit-fetcher) as the server that receives the data. However, you could adapt it to use any other suitable server available to you.
-
-The approach demonstrated in these repositories could be adapted to transfer other sensor data (such as heart rate).
-
-More information is available in the [server's readme](https://github.com/gondwanasoft/android-fitbit-fetcher/blob/master/README.md).
-
-Usage (assuming use of [android-fitbit-fetcher](https://github.com/gondwanasoft/android-fitbit-fetcher))
--
-Build and install this repo to your watch and companion device (*eg*, phone).
-
-Build and install the server on your companion device (*eg*, phone).
-
-Start the server app.
-
-Start the watch app ('Accel Fetcher').
-
-Record some accelerometer data on your watch.
-
-Transfer accelerometer data from watch to phone.
-
-Await transfer to finish (see watch app).
-
-Select `GET DATA` on server app, and select a file into which the data will be copied.
-
-Use a file manager on your phone to verify that the data has been received.
-
-Caveats
--
-
-This app is not intended to be used as is. Its purpose is to demonstrate some techniques that could be applied in other applications.
-
-This has not been tested using any server other than [android-fitbit-fetcher](https://github.com/gondwanasoft/android-fitbit-fetcher).
-
-No support is provided.
+# Looking for Fixes
+I will appreciate it very much if anyone has such experience is willing to share his/her fixes to these issues.
