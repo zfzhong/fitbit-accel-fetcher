@@ -1,7 +1,7 @@
 # Code Modification: Checking Timestamp Gaps and Duplicates
 The code gets slightly modified to check the timestamp gaps and duplicates from Fitbit Accelerometer batch reading.
 
-# The Code That Reads Fitbit Accelerometer Data
+# JS Code That Reads Fitbit Accelerometer Data
 The following is a very simple piece of code reading the Fitbit Accelerometer:
 ```
 const batchSize = 30;
