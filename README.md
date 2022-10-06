@@ -25,6 +25,7 @@ function accelReading() {
   }
 }
 ```
+And strangely, the above code is likely to get a batch of data with disordered (gapped or duplicated) timestamps.
 
 # The Problem
 Given frequency 30 and batch 30, we will get 30 entries of data from the batch reading. Ideally, the timestamps of
