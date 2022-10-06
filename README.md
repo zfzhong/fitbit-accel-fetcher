@@ -17,7 +17,7 @@ function accelReading() {
   const n = accel.readings.timestamp.length;
   if (n <= 0) return;
 
-  for (let i = 0; i < n; i++) {
+  for (let i=0; i<n; i++) {
     dataBufferView[4*i] = accel.readings.timestamp[i];
     dataBufferView[4*i+1] = accel.readings.x[i];
     dataBufferView[4*i+2] = accel.readings.y[i];
