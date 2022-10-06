@@ -1,6 +1,31 @@
 # Code Modification: Checking Timestamp Gaps and Duplicates
 The code gets slightly modified to check the timestamp gaps and duplicates from Fitbit Accelerometer batch reading.
 
+# The Code That Reads Fitbit Accelerometer Data
+The following is a very simple piece of code reading the Fitbit Accelerometer:
+```
+const batchSize = 30;
+const frequency = 30;
+
+const accel = new Accelerometer({frequency:frequency, batch: batchSize});
+accel.addEventListener("reading", accelReading);
+
+const dataBuffer = new ArrayBuffer(16 * batchSize);
+const dataBufferView = new Int32Array(dataBuffer);
+
+function accelReading() {
+  const n = accel.readings.timestamp.length;
+  if (n <= 0) return;
+
+  for (let i = 0; i < n; i++) {
+    dataBufferView[4*i] = accel.readings.timestamp[i];
+    dataBufferView[4*i+1] = accel.readings.x[i];
+    dataBufferView[4*i+2] = accel.readings.y[i];
+    dataBufferView[4*i+3] = accel.readings.z[i];
+  }
+}
+```
+
 # The Problem
 Given frequency 30 and batch 30, we will get 30 entries of data from the batch reading. Ideally, the timestamps of
 the 30 entries of data should be evenly separated within a second, e.g., every entry should be around 33ms behind
@@ -18,18 +43,18 @@ Specifically, we expect the data to be like:
 In the above table, the timestamps are evenly separated. The time interval between two consecutive entries of data is 33ms.
 
 However, in practice we found timestamp gaps from the batch reading data. The data we actually got, sometimes, was like the following:
-| Timestamp | x | y | z |
-| :-------: | :-: | :-: | :-: |
-| 897701 | 0.01 | -0.136 | 9.734 |
-| 897731 | 0.006 | -0.134 | 9.744 |
-| 897761 | -0.008 | -0.108 | 9.73 |
-| 897862 | 0.026 | -0.13 | 9.738 |
-| 897892 | 0 | -0.122 | 9.718 |
-| 897922 | 0.032 | -0.122 | 9.744 |
-| 897952 | 0.02 | -0.136 | 9.732 |
-| 930679 | 0.018 | -0.15 | 9.748 |
-| 930709 | 0.026 | -0.132 | 9.728 |
-| 930739 | 0.014 | -0.118 | 9.67 |
+| Timestamp | x | y | z | notes |
+| :-------: | :-: | :-: | :-: | :-- |
+| 897701 | 0.01 | -0.136 | 9.734 | |
+| 897731 | 0.006 | -0.134 | 9.744 | |
+| **_897761_** | -0.008 | -0.108 | 9.73 | |
+| **_897862_** | 0.026 | -0.13 | 9.738 | <-- gap |
+| 897892 | 0 | -0.122 | 9.718 | |
+| 897922 | 0.032 | -0.122 | 9.744 | |
+| 897952 | 0.02 | -0.136 | 9.732 | |
+| 930679 | 0.018 | -0.15 | 9.748 | |
+| 930709 | 0.026 | -0.132 | 9.728 | |
+| 930739 | 0.014 | -0.118 | 9.67 | |
 
 The above example is from one of the files we got by running the code of this repository (slightly modified from [fitbit-accel-fetcher](https://github.com/gondwanasoft/fitbit-accel-fetcher)) on Fitbit Sense to check timestamp gaps and duplicates. 
 
@@ -48,6 +73,7 @@ The above example is from file "[17.csv](/17.csv)", row 391 - 400.
   We actually expect the timestamps increases. We are just confused by the timestamp decreasing or duplicating issues.
 
   I have many other files which have gaps and duplicates, I am willing to provide them if anyone is interested. If you run the code from this repository with your Fitbit device, you will get data with gaps and duplicates as well.
+
 
 # How Did I Discover the Problem
 I actually built my stand-alone Fitbit App to record the accelerometer data with frequency 50 and batch 50. I found the gaps and duplicates in my App. I am not quite confident in my code because I am quite new to Fitbit App developement.
