@@ -18,6 +18,16 @@ const bytesPerBatch = bytesPerRecord * recordsPerBatch
 const dataBuffer = new ArrayBuffer(bytesPerBatch)
 const dataBufferView = new Int16Array(dataBuffer)
 const accel = new Accelerometer({ frequency: frequency, batch: recordsPerBatch })
+
+
+const hrmConfig = {frequency: 1, batch: 1};
+const hrmRecordSize = 4;
+const hrmRecord = new ArrayBuffer(hrmRecordSize);
+const hrmRecordTimeView = new Uint16Array(hrmRecord, 0, hrmConfig.batch);
+const hrmRecordHeartView = new Uint16Array(hrmRecord, 2 * hrmConfig.batch, hrmConfig.batch);
+const hrm = new HeartRateSensor(hrmConfig);
+let hrmLogFD = null; 
+
 //const touchEl = document.getElementById('touch')
 const recTimeEl = document.getElementById('recTime')
 const statusEl = document.getElementById('status')
@@ -49,6 +59,8 @@ restoreState()
 recBtnEl.addEventListener("click", onRecBtn)
 xferBtnEl.addEventListener("click", onXferBtn)
 accel.addEventListener("reading", onAccelReading)
+hrm.addEventListener("reading", onHrmReading);
+
 inbox.addEventListener("newfile", receiveFilesFromCompanion)
 receiveFilesFromCompanion()
 if (state.fileNumberRecording && fs.existsSync('1')) {
@@ -164,6 +176,16 @@ function onAccelReading() {
   recTimeEl.text = Math.round((Date.now()-startTime)/1000)
 }
 
+function onHrmReading() {
+    let dataLength = hrm.readings.timestamp.length;
+    for (let i = 0; i < dataLength; ++i) {
+	hrmRecordTimeView[i] = hrm.readings.timestamp[i];
+	hrmRecordHeartView[i] = hrm.readings.heartRate[i];
+    }
+
+    fs.writeSync(hrmLogFD, hrmRecord);
+}
+
 function startRec() {
   if (isTransferring) return
 
@@ -176,7 +198,11 @@ function startRec() {
   errorEl.style.fill = '#ff0000'
   errorEl.text = ''
   statusEl.text = 'Recording file ' + state.fileNumberRecording
-  accel.start()
+
+  accel.start();
+  hrm.start();
+  hrmLogFD = fs.openSync("heart_rate.bin", "a");
+    
   if (simAccelTimer) {clearTimeout(simAccelTimer); simAccelTimer = 0}
   console.log('Started.')
   recBtnEl.text = 'STOP RECORDING'
@@ -197,6 +223,8 @@ function deleteFiles() {
 function stopRec() {
   fs.closeSync(fileDescriptor)
   accel.stop()
+  hrm.stop()
+    
   if (simAccelTimer) {clearTimeout(simAccelTimer); simAccelTimer = 0}
   console.log(`stopRec(): fileNumberRecording=${state.fileNumberRecording} recordsInFile=${recordsInFile}`)
   if (!recordsInFile) {   // don't include a zero-length file
